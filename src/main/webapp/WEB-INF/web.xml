@@ -43,7 +43,7 @@
 	</security-role>
 	<login-config>
 		<auth-method>BASIC</auth-method>
-		<realm-name>RestRXTomcat</realm-name>
+		<realm-name>RestRX</realm-name>
 	</login-config>
 <!-- 	<login-config> -->
 <!-- 		<auth-method>CLIENT-CERT</auth-method> -->
