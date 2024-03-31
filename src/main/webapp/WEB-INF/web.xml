@@ -34,8 +34,8 @@
 		<user-data-constraint>
 			<description>SSL not required</description>
 			<transport-guarantee>NONE</transport-guarantee>
-			<!-- <description>SSL required</description> -->
-			<!-- <transport-guarantee>CONFIDENTIAL</transport-guarantee> -->
+<!-- 			<description>SSL required</description> -->
+<!-- 			<transport-guarantee>CONFIDENTIAL</transport-guarantee> -->
 		</user-data-constraint>
 	</security-constraint>
 	<security-role>
@@ -45,4 +45,8 @@
 		<auth-method>BASIC</auth-method>
 		<realm-name>RestRXTomcat</realm-name>
 	</login-config>
+<!-- 	<login-config> -->
+<!-- 		<auth-method>CLIENT-CERT</auth-method> -->
+<!-- 		<realm-name>certificate</realm-name> -->
+<!-- 	</login-config> -->
 </web-app>
