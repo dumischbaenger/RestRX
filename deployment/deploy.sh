@@ -13,9 +13,8 @@ serverCert=serverCert.cer
 clientCsr=clientCsr.csr
 clientCert=clientCert.cer
 
-warFile=certificaterealm.war
+warFile=RestRXTomcat.war
 
-glassFishTar=./glassfish.tgz
 glassFishZip=./web-7.0.11.zip
 glassFishDir=./glassfish7
 glassFishTrustStore=$glassFishDir/glassfish/domains/domain1/config/cacerts.jks
@@ -23,8 +22,7 @@ glassFishTrustStore=$glassFishDir/glassfish/domains/domain1/config/cacerts.jks
 
 rm -rf "$keyStore" "$caCert" "$serverCsr" "$serverCert" "$clientCsr" "$clientCert" "$glassFishDir"
 
-#tar -xv -f "$glassFishTar"
-#unzip "$glassFishZip"
+unzip "$glassFishZip"
 
 
 #BD *************************************************************************
@@ -166,14 +164,6 @@ rm "$clientCsr" "$clientCert"
 keytool -export -alias selfsignedca -keystore "$keyStore" -storetype PKCS12 -storepass "$pw" -rfc -file "$caCert"
 keytool -printcert -file "$caCert" 
 
-exit
-
-#BD export ca cert
-test -e "$caCert" || {
-  keytool -export -alias selfsignedca -keystore "$keyStore" -storetype PKCS12 -storepass "$pw" -rfc -file "$caCert"
-  keytool -printcert -file "$caCert" 
-}
-
 
 #BD import ca cert to glassfish truststore
 keytool -import -file "$caCert" -keystore "$glassFishTrustStore" -keypass "$pw" -storepass "$pw" <<EOF
@@ -182,15 +172,34 @@ EOF
 
 cp "$warFile"  "$glassFishDir/glassfish/domains/domain1/autodeploy/"
 
+cat >> "$glassFishDir/glassfish/domains/domain1/config/login.conf" <<EOF
+RestRXTomcat {
+  com.sun.enterprise.security.auth.login.FileLoginModule required;
+};
+EOF
+
+
 #BD Glassfish starten
+export AS_START_TIMEOUT=$(expr 2 \* 60 \* 1000)
 asadmin start-domain 
+
+asadmin create-auth-realm --classname com.sun.enterprise.security.auth.realm.file.FileRealm \
+  --property file=\${com.sun.aas.instanceRoot}/config/RestRXTomcatKeyFile:jaas-context=RestRXTomcat \
+  RestRXTomcat
+
+asadmin create-file-user --passwordfile=passwordfile --authrealmname RestRXTomcat --groups testusers testuser
+
 
 #BD Glassfish konfigurieren
 asadmin set server.network-config.protocols.protocol.http-listener-2.ssl.tls13-enabled=false
 asadmin set server.network-config.protocols.protocol.http-listener-2.http.http2-enabled=false
 
-#BD Glassfish restarten um Aenderungen zu uebernehmen
-asadmin restart-domain
+
+#BD Glassfish stoppen
+asadmin stop-domain
+
+#BD Glasfisch im Consolenoutput
+startserv
 
 
 cat <<EOF
@@ -200,9 +209,16 @@ Glassfish Admin Console:
 App:
   https://localhost:8181/certificaterealm/
 
+glassfish starten:
+  asadmin start-domain
+
 glassfish stoppen:
   asadmin stop-domain
 EOF
+
+
+echo mach mal ne pause
+exit
 
 #BD Cert Realm erzeugen
 # glassfish7/bin/asadmin create-auth-realm --classname com.sun.enterprise.security.auth.realm.certificate.CertificateRealm newCertificateRealm
