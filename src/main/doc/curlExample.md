@@ -43,6 +43,13 @@ Details of the server certificate can be shown with:
 > keytool  -printcert -sslserver fedora.fritz.box:8181
 
 Curl with parameter -v could also be useful.
+
+Show content of client certificate:
+
+> openssl pkcs12 -in restrxtomcat_client.pfx -info
+
+> keytool -list -keystore restrxtomcat_client.pfx
+
  
 
 #Access Restservice 
@@ -58,10 +65,15 @@ curl -k -u "testuser:testpassword" https://fedora.fritz.box:8181/RestRXTomcat/ap
 ##https with verfication
 
 
-curl  -u "testuser:testpassword" --cacert restrxtomcat.cer https://fedora.fritz.box:8181/RestRXTomcat/apppath/resttest/modelclass
+curl  -u "testuser:testpassword" --cacert restrxtomcat_ca.cer https://fedora.fritz.box:8181/RestRXTomcat/apppath/resttest/modelclass
 
-In file restrxtomcat.cer is the root certificate.
+In file restrxtomcat_ca.cer is the root certificate.
 
 Parameter -v show certificate subject ...
+
+##https with cert authentication
+
+curl -vvv  --cacert restrxtomcat_ca.cer --cert-type P12 --cert restrxtomcat_client.pfx:changeit  https://fedora:8181/RestRXTomcat/apppath/resttest/modelclass
+
 
 
