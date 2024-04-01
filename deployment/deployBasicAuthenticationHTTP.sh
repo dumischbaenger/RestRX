@@ -19,6 +19,8 @@ glassFishZip=./web-7.0.11.zip
 glassFishDir=./glassfish7
 glassFishTrustStore=$glassFishDir/glassfish/domains/domain1/config/cacerts.jks
 
+source createenv.sh
+
 
 rm -rf "$keyStore" "$caCert" "$serverCsr" "$serverCert" "$clientCsr" "$clientCert" "$glassFishDir"
 
@@ -198,6 +200,10 @@ asadmin stop-domain
 
 
 cat <<EOF
+
+
+**********************************************************************************************************************
+
 Glassfish Admin Console:
   http://localhost:4848/common/index.jsf
 
@@ -213,12 +219,23 @@ glassfish stoppen:
 
 -> Rest Service abrufen: <-
   curl -u "testuser:testpassword" http://fedora.fritz.box:8080/RestRXBasicAuthenticationHTTP/apppath/resttest/modelclass
+
+**********************************************************************************************************************
+
+
+
+weiter mit Enter - glassfish wird dann mit der App im Vordergrund gestartet
 EOF
 
-echo weiter mit Enter
 read
 
 #BD Applikation deployen
+pushd ..
+./gradlew war && {
+  ls -l build/libs/RestRX.war 
+  cp build/libs/RestRX.war deployment/"$warFile"
+}
+popd 
 cp "$warFile"  "$glassFishDir/glassfish/domains/domain1/autodeploy/"
 
 #BD Glasfish mit Consolenoutput
