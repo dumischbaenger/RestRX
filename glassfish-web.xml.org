@@ -1,0 +1,16 @@
+<!DOCTYPE glassfish-web-app PUBLIC "-//GlassFish.org//DTD 
+GlassFish Application Server 3.1 Servlet 3.0//EN" 
+"http://glassfish.org/dtds/glassfish-web-app_3_0-1.dtd">
+<glassfish-web-app>
+	<session-config>
+		<session-manager />
+	</session-config>
+	<resource-ref>
+	</resource-ref>
+	<jsp-config />
+	<security-role-mapping>
+		<role-name>YOUR_ROLE</role-name>
+		<group-name>YOUR_GROUP</group-name>
+		<principal-name>CN=Test User, OU=n/a, O=Test User, L=Cologne, ST=NRW,C=DE</principal-name>
+	</security-role-mapping>
+</glassfish-web-app>
