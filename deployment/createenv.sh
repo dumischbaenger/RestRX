@@ -2,6 +2,6 @@
 
 #set -xu
 
-SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+DEPLOYMENT_DIR="$(dirname "$(readlink -f "$0")")"
 
-PATH=$PATH:"$SCRIPT_DIR/glassfish7/bin/"
+PATH=$PATH:"$DEPLOYMENT_DIR/glassfish7/bin/"
