@@ -13,14 +13,13 @@ serverCert=serverCert.cer
 clientCsr=clientCsr.csr
 clientCert=clientCert.cer
 
-warFile=RestRXBasicAuthenticationHTTP.war
+warFile=RestRXBasicAuthenticationHTTPS.war
 
 glassFishZip=./web-7.0.11.zip
 glassFishDir=./glassfish7
 glassFishTrustStore=$glassFishDir/glassfish/domains/domain1/config/cacerts.jks
 
 source createenv.sh
-
 
 rm -rf "$keyStore" "$caCert" "$serverCsr" "$serverCert" "$clientCsr" "$clientCert" "$glassFishDir"
 
@@ -56,7 +55,7 @@ keytool -genkeypair -v -alias server \
   -validity 3650 \
   -ext KeyUsage:critical=digitalSignature,keyEncipherment \
   -ext ExtendedKeyUsage=serverAuth \
-  -ext "SAN=dns:fedora,dns:localhost,ip:192.168.178.40,ip:127.0.0.1" \
+  -ext "SAN=dns:fedora,dns:fedora.fritz.box,dns:localhost,ip:192.168.178.40,ip:127.0.0.1" \
   -storepass "$pw" -keypass "$pw"  
 
 keytool -list -v -keystore "$keyStore"  -storepass "$pw" -keypass "$pw"
@@ -83,7 +82,7 @@ keytool -certreq -keystore "$keyStore"  \
   -alias server -file "$serverCsr" \
   -ext KeyUsage:critical=digitalSignature,keyEncipherment \
   -ext ExtendedKeyUsage=serverAuth \
-  -ext "SAN=dns:fedora,dns:localhost,ip:192.168.178.40,ip:127.0.0.1" \
+  -ext "SAN=dns:fedora,dns:fedora.fritz.box,dns:localhost,ip:192.168.178.40,ip:127.0.0.1" \
   -storepass "$pw" -keypass "$pw"
 
 #BD sign server csr by ca -> create server cert
@@ -91,7 +90,7 @@ keytool -gencert -keystore "$keyStore" \
   -alias selfsignedca -infile "$serverCsr" -outfile "$serverCert" \
   -ext KeyUsage:critical=digitalSignature,keyEncipherment \
   -ext ExtendedKeyUsage=serverAuth \
-  -ext "SAN=dns:fedora,dns:localhost,ip:192.168.178.40,ip:127.0.0.1" \
+  -ext "SAN=dns:fedora,dns:fedora.fritz.box,dns:localhost,ip:192.168.178.40,ip:127.0.0.1" \
   -storepass "$pw" -keypass "$pw"
 keytool -printcert -file "$serverCert"
 
@@ -168,7 +167,7 @@ keytool -printcert -file "$caCert"
 
 
 #BD import ca cert to glassfish truststore
-keytool -import -file "$caCert" -keystore "$glassFishTrustStore" -keypass "$pw" -storepass "$pw" <<EOF
+keytool -import -alias selfsignedca -file "$caCert" -keystore "$glassFishTrustStore" -keypass "$pw" -storepass "$pw" <<EOF
 Ja
 EOF
 
@@ -191,8 +190,13 @@ asadmin create-file-user --passwordfile=passwordfile --authrealmname RestRX --gr
 
 
 #BD Glassfish konfigurieren
-asadmin set server.network-config.protocols.protocol.http-listener-2.ssl.tls13-enabled=false
-asadmin set server.network-config.protocols.protocol.http-listener-2.http.http2-enabled=false
+asadmin set 'server.network-config.protocols.protocol.http-listener-2.ssl.tls13-enabled=false'
+asadmin set 'server.network-config.protocols.protocol.http-listener-2.http.http2-enabled=false'
+asadmin set 'configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.cert-nickname=server'
+asadmin set 'configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.key-store=${com.sun.aas.instanceRoot}/config/xyzKeystore'
+asadmin set 'configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.trust-store=${com.sun.aas.instanceRoot}/config/xyzTrustStore'
+asadmin set "configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.key-store=$DEPLOYMENT_DIR/$keyStore"
+asadmin set "configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.trust-store=$DEPLOYMENT_DIR/$keyStore"
 
 
 #BD Glassfish stoppen
@@ -207,9 +211,6 @@ cat <<EOF
 Glassfish Admin Console:
   http://localhost:4848/common/index.jsf
 
-App:
-  https://localhost:8181/certificaterealm/
-
 glassfish starten:
   asadmin start-domain
 
@@ -217,8 +218,11 @@ glassfish stoppen:
   asadmin stop-domain
 
 
--> Rest Service abrufen: <-
-  curl -u "testuser:testpassword" http://fedora.fritz.box:8080/RestRXBasicAuthenticationHTTP/apppath/resttest/modelclass
+-> Rest Service abrufen ohne Cert Ceck: <-
+  curl -k -u "testuser:testpassword" https://fedora.fritz.box:8181/RestRXBasicAuthenticationHTTPS/apppath/resttest/modelclass
+
+-> Rest Service abrufen _mit_ Cert Ceck: <-
+  curl  -u "testuser:testpassword" --cacert selfsignedRootCa.cer https://fedora:8181/RestRXBasicAuthenticationHTTPS/apppath/resttest/modelclass
 
 **********************************************************************************************************************
 
