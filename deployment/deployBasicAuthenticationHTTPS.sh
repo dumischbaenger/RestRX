@@ -18,6 +18,7 @@ warFile=RestRXBasicAuthenticationHTTPS.war
 glassFishZip=./web-7.0.11.zip
 glassFishDir=./glassfish7
 glassFishTrustStore=$glassFishDir/glassfish/domains/domain1/config/cacerts.jks
+glassFishKeyStore=$glassFishDir/glassfish/domains/domain1/config/keystore.jks
 
 source createenv.sh
 
@@ -171,6 +172,17 @@ keytool -import -alias selfsignedca -file "$caCert" -keystore "$glassFishTrustSt
 Ja
 EOF
 
+#BD import server cert to glassfish keystore
+keytool -importkeystore -srckeystore "$keyStore" -destkeystore "$glassFishKeyStore" -srcalias server -srcstorepass "$pw" -deststorepass "$pw" -srckeypass "$pw" -destkeypass "$pw" <<EOF
+Ja
+EOF
+
+
+#BD *************************************************************************
+#BD Glassfish config
+#BD *************************************************************************
+
+
 cat >> "$glassFishDir/glassfish/domains/domain1/config/login.conf" <<EOF
 RestRX {
   com.sun.enterprise.security.auth.login.FileLoginModule required;
@@ -193,10 +205,13 @@ asadmin create-file-user --passwordfile=passwordfile --authrealmname RestRX --gr
 asadmin set 'server.network-config.protocols.protocol.http-listener-2.ssl.tls13-enabled=false'
 asadmin set 'server.network-config.protocols.protocol.http-listener-2.http.http2-enabled=false'
 asadmin set 'configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.cert-nickname=server'
-asadmin set 'configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.key-store=${com.sun.aas.instanceRoot}/config/xyzKeystore'
-asadmin set 'configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.trust-store=${com.sun.aas.instanceRoot}/config/xyzTrustStore'
-asadmin set "configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.key-store=$DEPLOYMENT_DIR/$keyStore"
-asadmin set "configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.trust-store=$DEPLOYMENT_DIR/$keyStore"
+
+#BD lt https://github.com/eclipse-ee4j/glassfish/issues/18175 ist glassfish trotz des Parameters nicht in der
+#BD Lage einen Keystore pro Listener auszulesen
+#asadmin set 'configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.key-store=${com.sun.aas.instanceRoot}/config/xyzKeystore'
+#asadmin set 'configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.trust-store=${com.sun.aas.instanceRoot}/config/xyzTrustStore'
+#asadmin set "configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.key-store=$DEPLOYMENT_DIR/$keyStore"
+#asadmin set "configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.trust-store=$DEPLOYMENT_DIR/$keyStore"
 
 
 #BD Glassfish stoppen
