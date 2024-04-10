@@ -4,6 +4,6 @@ GlassFish Application Server 3.1 Servlet 3.0//EN"
 <glassfish-web-app>
 	<security-role-mapping>
 		<role-name>testusers</role-name>
-		<principal-name>CN=client_cn,OU=client_ou,O=client_o,L=client_l,ST=client_st,C=DE</principal-name>
+		<principal-name>CN=myclient,OU=mygroup,O=mycompany,L=mylocation,ST=bavaria,C=DE</principal-name>
 	</security-role-mapping>
 </glassfish-web-app>

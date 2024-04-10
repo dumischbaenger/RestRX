@@ -41,12 +41,12 @@
 	<security-role>
 		<role-name>testusers</role-name>
 	</security-role>
-	<login-config>
-		<auth-method>BASIC</auth-method>
-		<realm-name>RestRX</realm-name>
-	</login-config>
 <!-- 	<login-config> -->
-<!-- 		<auth-method>CLIENT-CERT</auth-method> -->
-<!-- 		<realm-name>certificate</realm-name> -->
+<!-- 		<auth-method>BASIC</auth-method> -->
+<!-- 		<realm-name>RestRX</realm-name> -->
 <!-- 	</login-config> -->
+	<login-config>
+		<auth-method>CLIENT-CERT</auth-method>
+		<realm-name>certificate</realm-name>
+	</login-config>
 </web-app>
