@@ -12,8 +12,9 @@ serverCsr=serverCsr.csr
 serverCert=serverCert.cer
 clientCsr=clientCsr.csr
 clientCert=clientCert.cer
+clientP12=clientCert.p12
 
-warFile=RestRXBasicAuthenticationHTTPS.war
+warFile=RestRXCertAuthenticationHTTPS.war
 
 glassFishZip=./web-7.0.11.zip
 glassFishDir=./glassfish7
@@ -22,7 +23,7 @@ glassFishKeyStore=$glassFishDir/glassfish/domains/domain1/config/keystore.jks
 
 source createenv.sh
 
-rm -rf "$keyStore" "$caCert" "$serverCsr" "$serverCert" "$clientCsr" "$clientCert" "$glassFishDir"
+rm -rf "$keyStore" "$caCert" "$serverCsr" "$serverCert" "$clientCsr" "$clientCert" "$clientP12" "$glassFishDir"
 
 unzip "$glassFishZip"
 
@@ -166,6 +167,13 @@ rm "$clientCsr" "$clientCert"
 keytool -export -alias selfsignedca -keystore "$keyStore" -storetype PKCS12 -storepass "$pw" -rfc -file "$caCert"
 keytool -printcert -file "$caCert" 
 
+#BD export client cert
+keytool -importkeystore -srcalias client -srckeystore "$keyStore" -destkeystore "$clientP12" -srcstorepass "$pw" -deststorepass "$pw" -srckeypass "$pw"
+
+#BD export root cert
+keytool -export -alias selfsignedca -keystore "$keyStore" -storetype PKCS12 -storepass "$pw" -rfc -file "$caCert"
+keytool -printcert -file "$caCert" 
+
 
 #BD import ca cert to glassfish truststore
 keytool -import -alias selfsignedca -file "$caCert" -keystore "$glassFishTrustStore" -keypass "$pw" -storepass "$pw" <<EOF
@@ -233,11 +241,9 @@ glassfish stoppen:
   asadmin stop-domain
 
 
--> Rest Service abrufen ohne Cert Ceck: <-
-  curl -k -u "testuser:testpassword" https://fedora.fritz.box:8181/RestRXBasicAuthenticationHTTPS/apppath/resttest/modelclass
 
--> Rest Service abrufen _mit_ Cert Ceck: <-
-  curl  -u "testuser:testpassword" --cacert selfsignedRootCa.cer https://fedora:8181/RestRXBasicAuthenticationHTTPS/apppath/resttest/modelclass
+-> Rest Service abrufen mit _gegenseitigem_ Cert Ceck: <-
+  curl --cacert selfsignedRootCa.cer --cert-type P12 --cert clientCert.p12:changeit https://fedora:8181/RestRXCertAuthenticationHTTPS/apppath/resttest/modelclass
 
 **********************************************************************************************************************
 
