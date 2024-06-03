@@ -10,6 +10,11 @@ At the Moment there is one Branch:
 
 Each branch has a deployment directory that contains a zipped version of glassfish an a bash script to install glassfish and deploy this sample app with it
 
+To implement more sophisticated cert authentication schemes see: 
+
+* https://docs.payara.fish/community/docs/documentation/payara-server/server-configuration/security/certificate-realm-groups.html
+* https://docs.payara.fish/community/docs/documentation/payara-server/server-configuration/security/certificate-realm-certificate-validation.html
+
 <!--
 
 # Application
