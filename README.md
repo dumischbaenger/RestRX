@@ -4,9 +4,11 @@ This is an minimal sample app showing the use of _JAX-RS_ on Glassfish 7.
 
 # Branches
 
-At the Moment there is one Branch:
+At the moment there are four branches:
 
 * GlassFish-BasicAuthenticationHTTP
+* GlassFish-BasicAuthenticationHTTPS
+* GlassFish-CertAuthenticationHTTPS
 
 Each branch has a deployment directory that contains a zipped version of glassfish an a bash script to install glassfish and deploy this sample app with it
 
